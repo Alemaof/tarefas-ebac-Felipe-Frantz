@@ -1,0 +1,9 @@
+INICIO
+   1. Abrir os olhos
+   2. Pegar o celular
+   3. Ver o horário
+   4. Levantar
+   5. Ir até o banheiro
+   6. Escovar os dentes
+   7. Tomar banho
+FIM
