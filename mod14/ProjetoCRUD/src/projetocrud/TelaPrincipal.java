@@ -7,6 +7,7 @@ package projetocrud;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 import projetocrud.dao.ClienteMapDAO;
+import projetocrud.dao.ClienteSetDAO;
 import projetocrud.dao.IClienteDAO;
 import projetocrud.domain.Cliente;
 
@@ -17,7 +18,7 @@ import projetocrud.domain.Cliente;
 public class TelaPrincipal extends javax.swing.JFrame {
     
     private DefaultTableModel modelo;
-    private IClienteDAO clienteDAO = new ClienteMapDAO();
+    private IClienteDAO clienteDAO = new ClienteSetDAO();
     
     /**
      * Creates new form TelaPrincipal
