@@ -11,13 +11,12 @@ public class App {
         System.out.println("Exemplo: Joao-M,Maria-F");
         String nomes = s.next();
 
-        List<String> listaNomes = Arrays.stream(nomes.split(",")).collect(Collectors.toList());
-
-        List<String> listaMulheres = listaNomes.stream().filter(pessoa -> pessoa.charAt(pessoa.length() - 1) == 'F')
-                .map(pessoa -> pessoa.replace("-F","")).collect(Collectors.toList());
-
+        List<String> listaMulheres = Arrays.stream(nomes.split(",")).
+                filter(pessoa -> pessoa.charAt(pessoa.length() - 1) == 'F')
+                .map(pessoa -> pessoa.replace("-F",""))
+                .collect(Collectors.toList());
 
         System.out.println("As mulheres informadas sao:");
-        listaMulheres.forEach(mulher -> System.out.println(mulher));
+        listaMulheres.forEach(System.out::println);
     }
 }
