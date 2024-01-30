@@ -75,8 +75,14 @@ public class ProdutoTest {
 
         assertTrue(countEstoque == 1);
 
-        Produto produtoAtualizado = (Produto) produtoDAO.buscar(produto.getCodigo());
+        Produto produtoAtualizado =  produtoDAO.buscar(produto.getCodigo());
         assertTrue(produtoAtualizado.getQuantidade() == 7);
+
+        countEstoque = produtoDAO.removeEstoque(produtoAtualizado.getId(), 3);
+        assertTrue(countEstoque == 1);
+        produtoAtualizado =  produtoDAO.buscar(produto.getCodigo());
+        assertTrue(produtoAtualizado.getQuantidade() == 4);
+
         excluir(produto);
     }
 

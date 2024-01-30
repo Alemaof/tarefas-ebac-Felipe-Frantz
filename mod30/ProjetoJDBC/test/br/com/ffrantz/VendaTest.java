@@ -62,7 +62,7 @@ public class VendaTest {
     }
 
     @Test
-    public void pesquisar() throws DAOException, MaisDeUmRegistroException {
+    public void pesquisar() throws DAOException, MaisDeUmRegistroException, SQLException {
         Venda venda = criarVenda(1l);
         Integer retorno = vendaDAO.salvar(venda);
         assertTrue(retorno == 1);
@@ -72,7 +72,7 @@ public class VendaTest {
     }
 
     @Test
-    public void salvar() throws DAOException, MaisDeUmRegistroException {
+    public void salvar() throws DAOException, MaisDeUmRegistroException, SQLException {
         Venda venda = criarVenda(2l);
         Integer retorno = vendaDAO.salvar(venda);
         assertTrue(retorno == 1);
@@ -81,26 +81,27 @@ public class VendaTest {
         assertTrue(venda.getStatus().equals(Venda.Status.INICIADA));
 
         Venda vendaConsultada = vendaDAO.buscar(venda.getCodigo());
+
         assertTrue(vendaConsultada.getId() != null);
         assertEquals(venda.getCodigo(), vendaConsultada.getCodigo());
     }
 
 
     @Test
-    public void cancelarVenda() throws DAOException, MaisDeUmRegistroException {
+    public void cancelarVenda() throws DAOException, MaisDeUmRegistroException, SQLException {
         Long codigoVenda = 3l;
         Venda venda = criarVenda(codigoVenda);
-        Produto produtoBuscado = (Produto) produtoDAO.buscar(produto.getCodigo());
+        Produto produtoBuscado = produtoDAO.buscar(produto.getCodigo());
         assertTrue(produtoBuscado.getQuantidade() == 3);
         Integer retorno = vendaDAO.salvar(venda);
-        produtoBuscado = (Produto) produtoDAO.buscar(produto.getCodigo());
-        assertTrue(produtoBuscado.getQuantidade() == 1);
         assertTrue(retorno == 1);
+        produtoBuscado = produtoDAO.buscar(produto.getCodigo());
+        assertTrue(produtoBuscado.getQuantidade() == 1);
         assertNotNull(venda);
         assertEquals(codigoVenda, venda.getCodigo());
 
         vendaDAO.cancelarVenda(venda);
-        produtoBuscado = (Produto) produtoDAO.buscar(produto.getCodigo());
+        produtoBuscado = produtoDAO.buscar(produto.getCodigo());
         assertTrue(produtoBuscado.getQuantidade() == 3);
 
         Venda vendaConsultada = vendaDAO.buscar(codigoVenda);
@@ -109,7 +110,7 @@ public class VendaTest {
     }
 
     @Test
-    public void adicionarMaisProdutosDoMesmo() throws DAOException, MaisDeUmRegistroException {
+    public void adicionarMaisProdutosDoMesmo() throws DAOException, MaisDeUmRegistroException, SQLException {
         Long codigoVenda = 4l;
         Venda venda = criarVenda(codigoVenda);
         Integer retorno = vendaDAO.salvar(venda);
@@ -117,8 +118,14 @@ public class VendaTest {
         assertNotNull(venda);
         assertEquals(codigoVenda, venda.getCodigo());
 
+        Produto produtoBuscado = produtoDAO.buscar(produto.getCodigo());
+        assertTrue(produtoBuscado.getQuantidade() == 1);
+
         Venda vendaConsultada = vendaDAO.buscar(codigoVenda);
         vendaDAO.adicionarProduto(produto, 1, vendaConsultada);
+
+        produtoBuscado = produtoDAO.buscar(produto.getCodigo());
+        assertTrue(produtoBuscado.getQuantidade() == 0);
 
         assertTrue(vendaDAO.getQuantidadeTotalProdutos() == 3);
         BigDecimal valorTotal = BigDecimal.valueOf(30).setScale(0, RoundingMode.HALF_DOWN);
@@ -127,7 +134,7 @@ public class VendaTest {
     }
 
     @Test
-    public void adicionarMaisProdutosDiferentes() throws DAOException, MaisDeUmRegistroException {
+    public void adicionarMaisProdutosDiferentes() throws DAOException, MaisDeUmRegistroException, SQLException {
         Long codigoVenda = 5l;
         Venda venda = criarVenda(codigoVenda);
         Integer retorno = vendaDAO.salvar(venda);
@@ -135,12 +142,21 @@ public class VendaTest {
         assertNotNull(venda);
         assertEquals(codigoVenda, venda.getCodigo());
 
+        Produto produtoBuscado = produtoDAO.buscar(produto.getCodigo());
+        assertTrue(produtoBuscado.getQuantidade() == 1);
+
         Produto prod = cadastrarProduto(codigoVenda, BigDecimal.valueOf(50));
         assertNotNull(prod);
         assertEquals(codigoVenda, prod.getCodigo());
 
+        produtoBuscado = produtoDAO.buscar(prod.getCodigo());
+        assertTrue(produtoBuscado.getQuantidade() == 3);
+
         Venda vendaConsultada = vendaDAO.buscar(codigoVenda);
         vendaDAO.adicionarProduto(prod, 1, vendaConsultada);
+
+        produtoBuscado = produtoDAO.buscar(prod.getCodigo());
+        assertTrue(produtoBuscado.getQuantidade() == 2);
 
         assertTrue(vendaDAO.getQuantidadeTotalProdutos() == 3);
         BigDecimal valorTotal = BigDecimal.valueOf(70).setScale(0, RoundingMode.HALF_DOWN);
@@ -149,7 +165,7 @@ public class VendaTest {
     }
 
     @Test(expected = DAOException.class)
-    public void salvarVendaMesmoCodigoExistente() throws DAOException {
+    public void salvarVendaMesmoCodigoExistente() throws DAOException, MaisDeUmRegistroException, SQLException {
         Venda venda = criarVenda(6l);
         Integer retorno = vendaDAO.salvar(venda);
         assertTrue(retorno == 1);
@@ -160,7 +176,7 @@ public class VendaTest {
     }
 
     @Test
-    public void removerProduto() throws DAOException, MaisDeUmRegistroException {
+    public void removerProduto() throws DAOException, MaisDeUmRegistroException, SQLException {
         Long codigoVenda = 7l;
         Venda venda = criarVenda(codigoVenda);
         Integer retorno = vendaDAO.salvar(venda);
@@ -168,12 +184,22 @@ public class VendaTest {
         assertNotNull(venda);
         assertEquals(codigoVenda, venda.getCodigo());
 
+        Produto produtoBuscado = produtoDAO.buscar(produto.getCodigo());
+        assertTrue(produtoBuscado.getQuantidade() == 1);
+
         Produto prod = cadastrarProduto(codigoVenda, BigDecimal.valueOf(50));
         assertNotNull(prod);
         assertEquals(codigoVenda, prod.getCodigo());
 
+        produtoBuscado = produtoDAO.buscar(prod.getCodigo());
+        assertTrue(produtoBuscado.getQuantidade() == 3);
+
         Venda vendaConsultada = vendaDAO.buscar(codigoVenda);
         vendaDAO.adicionarProduto(prod, 1, vendaConsultada);
+
+        produtoBuscado = produtoDAO.buscar(prod.getCodigo());
+        assertTrue(produtoBuscado.getQuantidade() == 2);
+
         assertTrue(vendaDAO.getQuantidadeTotalProdutos() == 3);
         BigDecimal valorTotal = BigDecimal.valueOf(70).setScale(0, RoundingMode.HALF_DOWN);
         assertTrue(vendaConsultada.getValorTotal().equals(valorTotal));
@@ -187,7 +213,7 @@ public class VendaTest {
     }
 
     @Test
-    public void removerApenasUmProduto() throws DAOException, MaisDeUmRegistroException {
+    public void removerApenasUmProduto() throws DAOException, MaisDeUmRegistroException, SQLException {
         Long codigoVenda = 8l;
         Venda venda = criarVenda(codigoVenda);
         Integer retorno = vendaDAO.salvar(venda);
@@ -195,18 +221,32 @@ public class VendaTest {
         assertNotNull(venda);
         assertEquals(codigoVenda, venda.getCodigo());
 
+        Produto produtoBuscado = produtoDAO.buscar(produto.getCodigo());
+        assertTrue(produtoBuscado.getQuantidade() == 1);
+
         Produto prod = cadastrarProduto(codigoVenda, BigDecimal.valueOf(50));
         assertNotNull(prod);
         assertEquals(codigoVenda, prod.getCodigo());
 
+        produtoBuscado = produtoDAO.buscar(prod.getCodigo());
+        assertTrue(produtoBuscado.getQuantidade() == 3);
+
         Venda vendaConsultada = vendaDAO.buscar(codigoVenda);
          vendaDAO.adicionarProduto(prod, 1, vendaConsultada);
+
+        produtoBuscado = produtoDAO.buscar(prod.getCodigo());
+        assertTrue(produtoBuscado.getQuantidade() == 2);
+
         assertTrue(vendaDAO.getQuantidadeTotalProdutos() == 3);
         BigDecimal valorTotal = BigDecimal.valueOf(70).setScale(0, RoundingMode.HALF_DOWN);
         assertTrue(vendaConsultada.getValorTotal().equals(valorTotal));
 
 
         vendaDAO.removerProduto(prod, 1, vendaConsultada);
+
+        produtoBuscado = produtoDAO.buscar(prod.getCodigo());
+        assertTrue(produtoBuscado.getQuantidade() == 3);
+
         assertTrue(vendaDAO.getQuantidadeTotalProdutos() == 2);
         valorTotal = BigDecimal.valueOf(20).setScale(0, RoundingMode.HALF_DOWN);
         assertTrue(vendaConsultada.getValorTotal().equals(valorTotal));
@@ -214,7 +254,7 @@ public class VendaTest {
     }
 
     @Test
-    public void removerTodosProdutos() throws DAOException, MaisDeUmRegistroException {
+    public void removerTodosProdutos() throws DAOException, MaisDeUmRegistroException, SQLException {
         Long codigoVenda = 9l;
         Venda venda = criarVenda(codigoVenda);
         Integer retorno = vendaDAO.salvar(venda);
@@ -222,9 +262,15 @@ public class VendaTest {
         assertNotNull(venda);
         assertEquals(codigoVenda, venda.getCodigo());
 
+        Produto produtoBuscado = produtoDAO.buscar(produto.getCodigo());
+        assertTrue(produtoBuscado.getQuantidade() == 1);
+
         Produto prod = cadastrarProduto(codigoVenda, BigDecimal.valueOf(50));
         assertNotNull(prod);
         assertEquals(codigoVenda, prod.getCodigo());
+
+        produtoBuscado = produtoDAO.buscar(prod.getCodigo());
+        assertTrue(produtoBuscado.getQuantidade() == 3);
 
         Venda vendaConsultada = vendaDAO.buscar(codigoVenda);
         vendaDAO.adicionarProduto(prod, 1, vendaConsultada);
@@ -232,15 +278,24 @@ public class VendaTest {
         BigDecimal valorTotal = BigDecimal.valueOf(70).setScale(0, RoundingMode.HALF_DOWN);
         assertTrue(vendaConsultada.getValorTotal().equals(valorTotal));
 
+        produtoBuscado = produtoDAO.buscar(prod.getCodigo());
+        assertTrue(produtoBuscado.getQuantidade() == 2);
+
 
         vendaDAO.removerTodosProdutos(vendaConsultada);
         assertTrue(vendaDAO.getQuantidadeTotalProdutos() == 0);
         assertTrue(vendaConsultada.getValorTotal().equals(BigDecimal.valueOf(0)));
         assertTrue(vendaConsultada.getStatus().equals(Venda.Status.INICIADA));
+
+        produtoBuscado = produtoDAO.buscar(produto.getCodigo());
+        assertTrue(produtoBuscado.getQuantidade() == 3);
+
+        produtoBuscado = produtoDAO.buscar(prod.getCodigo());
+        assertTrue(produtoBuscado.getQuantidade() == 3);
     }
 
     @Test
-    public void finalizarVenda() throws DAOException, MaisDeUmRegistroException {
+    public void finalizarVenda() throws DAOException, MaisDeUmRegistroException, SQLException {
         Long codigoVenda = 10l;
         Venda venda = criarVenda(codigoVenda);
         Integer retorno = vendaDAO.salvar(venda);
@@ -256,7 +311,7 @@ public class VendaTest {
     }
 
     @Test(expected = UnsupportedOperationException.class)
-    public void tentarAdicionarProdutosVendaFinalizada() throws DAOException, MaisDeUmRegistroException {
+    public void tentarAdicionarProdutosVendaFinalizada() throws DAOException, MaisDeUmRegistroException, SQLException {
         Long codigoVenda = 11l;
         Venda venda = criarVenda(codigoVenda);
         Integer retorno =vendaDAO.salvar(venda);
@@ -297,7 +352,7 @@ public class VendaTest {
         return cliente;
     }
 
-    private Venda criarVenda(Long codigo) {
+    private Venda criarVenda(Long codigo) throws DAOException, MaisDeUmRegistroException, SQLException {
         Venda venda = new Venda();
         venda.setCodigo(codigo);
         venda.setDataDaVenda(Instant.now());

@@ -98,8 +98,8 @@ public class ProdutoDAO extends GenericDAO<Produto, Long> implements IProdutoDAO
         return atualizar(prodBuscado);
     }
 
-    public Integer removeEstoque(Produto produto, Integer quantidade) throws DAOException, MaisDeUmRegistroException {
-        Produto prodBuscado = buscar(produto.getCodigo());
+    public Integer removeEstoque(Long id, Integer quantidade) throws DAOException, MaisDeUmRegistroException {
+        Produto prodBuscado = buscarPorID(id);
         prodBuscado.setQuantidade(prodBuscado.getQuantidade() - quantidade);
         return atualizar(prodBuscado);
     }

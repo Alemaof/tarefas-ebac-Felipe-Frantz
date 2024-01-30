@@ -8,5 +8,5 @@ import br.com.ffrantz.exceptions.MaisDeUmRegistroException;
 public interface IProdutoDAO extends IGenericDAO<Produto,Long> {
     Integer addEstoque(Long id, Integer i) throws DAOException;
 
-    Integer removeEstoque(Produto produto, Integer quantidade) throws DAOException, MaisDeUmRegistroException;
+    Integer removeEstoque(Long produto, Integer quantidade) throws DAOException, MaisDeUmRegistroException;
 }

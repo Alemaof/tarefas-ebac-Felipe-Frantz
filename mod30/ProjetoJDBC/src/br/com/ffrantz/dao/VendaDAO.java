@@ -1,5 +1,6 @@
 package br.com.ffrantz.dao;
 
+import br.com.ffrantz.connection.ConnectionFactory;
 import br.com.ffrantz.dao.generic.GenericDAO;
 import br.com.ffrantz.domain.Cliente;
 import br.com.ffrantz.domain.Produto;
@@ -20,12 +21,12 @@ public class VendaDAO extends GenericDAO<Venda, Long> implements IVendaDAO {
 
     private Set<ProdutoVendido> produtos = new HashSet<>();
 
-    private ProdutoVendidoDAO produtoVendidoDAO;
+    private IProdutoVendidoDAO produtoVendidoDAO;
 
     private IProdutoDAO produtoDAO;
 
     @Override
-    public void adicionarProduto(Produto produto, Integer quantidade, Venda venda) {
+    public void adicionarProduto(Produto produto, Integer quantidade, Venda venda) throws DAOException, MaisDeUmRegistroException, SQLException {
         validarStatus(venda);
         Optional<ProdutoVendido> op =
                 produtos.stream().filter(filter -> filter.getProduto().getCodigo().equals(produto.getCodigo())).findAny();
@@ -35,6 +36,7 @@ public class VendaDAO extends GenericDAO<Venda, Long> implements IVendaDAO {
             produtoQtd.setValorTotal(produto.getValor().multiply(BigDecimal.valueOf(produtoQtd.getQuantidade())));
             produtos.remove(produtoQtd);
             produtos.add(produtoQtd);
+            produtoDAO.removeEstoque(produtoQtd.getProduto().getId(),quantidade);
             venda.setProdutoVendido(produtos);
         } else {
             ProdutoVendido prod = new ProdutoVendido();
@@ -43,6 +45,9 @@ public class VendaDAO extends GenericDAO<Venda, Long> implements IVendaDAO {
             prod.setValorTotal(produto.getValor().multiply(BigDecimal.valueOf(quantidade)));
             produtos.add(prod);
             venda.setProdutoVendido(produtos);
+            if(venda.getId()!=null) {
+                insertProdutoVendido(prod, venda);
+            }
         }
         recalcularValorTotalVenda(venda);
     }
@@ -53,8 +58,8 @@ public class VendaDAO extends GenericDAO<Venda, Long> implements IVendaDAO {
         }
     }
 
-    public void removerProduto(Produto produto, Integer quantidade, Venda vendaConsultada) {
-        validarStatus(vendaConsultada);
+    public void removerProduto(Produto produto, Integer quantidade, Venda venda) throws DAOException {
+        validarStatus(venda);
         Optional<ProdutoVendido> op =
                 produtos.stream().filter(filter -> filter.getProduto().getCodigo().equals(produto.getCodigo())).findAny();
 
@@ -63,17 +68,20 @@ public class VendaDAO extends GenericDAO<Venda, Long> implements IVendaDAO {
             if (produtoQtd.getQuantidade()>quantidade) {
                 produtoQtd.setQuantidade(produtoQtd.getQuantidade() - quantidade);
                 produtoQtd.setValorTotal(produto.getValor().multiply(BigDecimal.valueOf(produtoQtd.getQuantidade())));
-                recalcularValorTotalVenda(vendaConsultada);
+                recalcularValorTotalVenda(venda);
             } else {
                 produtos.remove(op.get());
-                recalcularValorTotalVenda(vendaConsultada);
+                recalcularValorTotalVenda(venda);
             }
-
+            produtoDAO.addEstoque(produtoQtd.getProduto().getId(), quantidade);
         }
     }
 
-    public void removerTodosProdutos(Venda venda) {
+    public void removerTodosProdutos(Venda venda) throws DAOException {
         validarStatus(venda);
+        for (ProdutoVendido prod : produtos){
+            produtoDAO.addEstoque(prod.getProduto().getId(),prod.getQuantidade());
+        }
         produtos.clear();
         venda.setValorTotal(BigDecimal.ZERO);
     }
@@ -174,14 +182,14 @@ public class VendaDAO extends GenericDAO<Venda, Long> implements IVendaDAO {
     protected Venda insertData(ResultSet rs) throws SQLException {
         //TODO
         Cliente cliente = new Cliente();
-        Venda venda1 = new Venda();
-        venda1.setCliente(ClienteFactory.convert(rs));
-        venda1.setId(rs.getLong("ID_VENDA"));
-        venda1.setCodigo(rs.getLong("CODIGO"));
-        venda1.setValorTotal(rs.getBigDecimal("VALOR_TOTAL"));
-        venda1.setDataDaVenda(rs.getTimestamp("DATA_VENDA").toInstant());
-        venda1.setStatus(Venda.Status.getByName(rs.getString("STATUS_VENDA")));
-        return venda1;
+        Venda venda = new Venda();
+        venda.setCliente(ClienteFactory.convert(rs));
+        venda.setId(rs.getLong("ID_VENDA"));
+        venda.setCodigo(rs.getLong("CODIGO"));
+        venda.setValorTotal(rs.getBigDecimal("VALOR_TOTAL"));
+        venda.setDataDaVenda(rs.getTimestamp("DATA_VENDA").toInstant());
+        venda.setStatus(Venda.Status.getByName(rs.getString("STATUS_VENDA")));
+        return venda;
     }
 
     @Override
@@ -224,11 +232,7 @@ public class VendaDAO extends GenericDAO<Venda, Long> implements IVendaDAO {
                     }
                 }
                 for (ProdutoVendido prod : venda.getProdutoVendido()) {
-                    stm = connection.prepareStatement(getProdInsetParam());
-                    addProdParamInsert(stm, venda, prod);
-                    stm.executeUpdate();
-                    produtoDAO = new ProdutoDAO();
-                    produtoDAO.removeEstoque(prod.getProduto(),prod.getQuantidade());
+                    insertProdutoVendido(prod,venda);
                 }
             }
             return rowsAffected;
@@ -239,6 +243,15 @@ public class VendaDAO extends GenericDAO<Venda, Long> implements IVendaDAO {
         } finally {
             closeConnection(connection, stm, null);
         }
+    }
+
+    private void insertProdutoVendido(ProdutoVendido prod, Venda venda) throws SQLException, DAOException, MaisDeUmRegistroException {
+        Connection connection = ConnectionFactory.getConnection();
+        PreparedStatement stm = connection.prepareStatement(getProdInsetParam());
+        addProdParamInsert(stm, venda, prod);
+        stm.executeUpdate();
+        produtoDAO = new ProdutoDAO();
+        produtoDAO.removeEstoque(prod.getProduto().getId(),prod.getQuantidade());
     }
 
     private void addProdParamInsert(PreparedStatement stm, Venda venda, ProdutoVendido prod) throws SQLException {
