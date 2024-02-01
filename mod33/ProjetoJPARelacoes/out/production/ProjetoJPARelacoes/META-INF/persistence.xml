@@ -7,8 +7,9 @@
 
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
-        <class>br.com.ffrantz.entity.Produto</class>
-
+        <class>br.com.ffrantz.entity.Carro</class>
+        <class>br.com.ffrantz.entity.Marca</class>
+        <class>br.com.ffrantz.entity.Acessorio</class>
 
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver" /> <!-- DB Driver -->
