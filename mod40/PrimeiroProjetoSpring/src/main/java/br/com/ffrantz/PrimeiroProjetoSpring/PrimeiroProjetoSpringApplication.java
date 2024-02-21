@@ -38,7 +38,7 @@ public class PrimeiroProjetoSpringApplication implements CommandLineRunner {
 	}
 
 	private Cliente createCliente() {
-		return Cliente.builder().cidade("SP").cpf(10101010101L).email("Teste@teste.com").end("Endereço").estado("SP")
+		return Cliente.builder().cidade("SP").cpf(11111111111L).email("Teste@teste.com").end("Endereço").estado("SP")
 				.nome("Felipe").idade(37).tel(11999999999L).build();
 	}
 }
