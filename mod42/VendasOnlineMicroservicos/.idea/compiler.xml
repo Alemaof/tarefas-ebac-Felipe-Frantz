@@ -14,8 +14,8 @@
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="ClienteService" target="11" />
-      <module name="ConfigServer" target="11" />
+      <module name="ClienteService" target="17" />
+      <module name="ConfigServer" target="17" />
       <module name="ProdutoService" target="17" />
       <module name="VendaService" target="17" />
     </bytecodeTargetLevel>
