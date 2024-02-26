@@ -1,4 +1,4 @@
-package br.com.ffrantz.vendas.online.exceptions;
+package br.com.ffrantz.vendas.online.exception;
 
 import br.com.ffrantz.vendas.online.errorhandling.ApiError;
 import lombok.extern.slf4j.Slf4j;
@@ -15,13 +15,11 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpClientErrorException.NotFound;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import static org.springframework.http.HttpStatus.BAD_REQUEST;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
-
 
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ControllerAdvice
@@ -111,8 +109,8 @@ public class RestExceptionHandler extends ResponseEntityExceptionHandler impleme
         return buildResponseEntity(apiError);
     }
 
-    @ExceptionHandler(NotFound.class)
-    protected ResponseEntity<Object> handleNotFound(NotFound ex) {
+    @ExceptionHandler(HttpClientErrorException.NotFound.class)
+    protected ResponseEntity<Object> handleNotFound(HttpClientErrorException.NotFound ex) {
         ApiError apiError = new ApiError(NOT_FOUND);
         apiError.setMessage(ex.getMessage());
         return buildResponseEntity(apiError);
