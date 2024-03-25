@@ -7,11 +7,12 @@ import java.util.List;
 public class Backtracking {
 
     public static void main(String[] args) {
-        int[] coord = new int[]{1, 2, 3, 4, 5, 6, 7};
-        int comb = 3;
+        int[] coord = new int[]{1, 2, 3, 4, 5};
+        int comb = 2;
 
         List<int[]> list = buscarCombinacoes(coord, comb);
         list.forEach(array -> System.out.println(Arrays.toString(array)));
+
         System.out.println(list.size());
     }
 
